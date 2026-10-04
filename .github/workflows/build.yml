@@ -1,0 +1,37 @@
+name: Build Shadow OSINT
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install deps
+        run: pip install pywebview aiohttp pillow pyinstaller
+        
+      - name: Generate icon
+        run: python build_icon.py
+        
+      - name: Build EXE
+        run: >
+          pyinstaller --noconfirm --onefile --windowed
+          --icon=app_icon.ico
+          --add-data "interface.html;."
+          --name "ShadowOSINT"
+          main.py
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShadowOSINT-Windows
+          path: dist/ShadowOSINT.exe
